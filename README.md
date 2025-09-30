@@ -1,20 +1,102 @@
-# EngageHub ⭐
-**Full-Stack Gamification Platform | Discord Bot + Django REST API**
+# 🚀 EngageHub - Full-Stack Community Engagement Platform
 
-[**🚀 Live Demo**](https://engagehub-gamify.vercel.app/?stable=true) • Production-Ready • Scalable Architecture
+
+> A production-ready SaaS platform showcasing enterprise-grade architecture, performance optimization, and modern web development practices.
+
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)](https://www.typescriptlang.org/)
+[![Deployed on Vercel](https://img.shields.io/badge/Deployed-Vercel-black)](https://engagehub-gamify.vercel.app/?stable=true)
+
+<p align="center">
+  <a href="https://engagehub-gamify.vercel.app/?stable=true">
+    <img src="assets/launch-demo.svg" alt="Launch Demo" width="420">
+  </a>
+</p>
 
 ---
 
-## 📋 Technical Overview
+## 🎯 Technical Overview
 
-EngageHub is a production-grade, full-stack community engagement platform built to handle thousands of concurrent users. It combines a real-time Discord bot with a robust Django REST backend to create a comprehensive gamification layer for online communities.
+EngageHub is a **full-stack community engagement platform** that demonstrates advanced software engineering practices, scalable architecture, and production-ready development. This project showcases expertise in modern web development, performance optimization, state management, and building complex user-facing applications.
 
-**Built to demonstrate:**
-- Complex async architecture with Discord.py and Django ORM integration
-- High-performance caching strategies and database optimization
-- Secure JWT authentication and role-based access control
-- Event-driven architecture with webhook integrations
-- Production deployment patterns with Docker and Gunicorn
+### 🏗️ System Architecture
+
+```mermaid
+graph TB
+    %% User Interactions
+    Users["`👥 **Users via Browser**
+    Web Interface Access`"]
+    Admins["`👨‍💼 **Admins via Django Admin UI**
+    Administrative Control Panel`"]
+    
+    %% Frontend Layer
+    subgraph Frontend[" "]
+        FrontendTitle["`☁️ **Frontend Deployment - Vercel Cloud Platform**`"]
+        NextJS["`⚛️ **Next.js Frontend**
+        React 18 • TypeScript • Tailwind • 🚀 Vercel`"]
+        FrontendTitle ~~~ NextJS
+    end
+    
+    %% Backend Container
+    subgraph Backend[" "]
+        BackendTitle["`🐳 **Render.com Container - Cloud Infrastructure**`"]
+        Django["`🐍 **Django Backend**
+        Python • REST API • JWT Auth • ⚙️ gunicorn`"]
+        DB[("`🗄️ **PostgreSQL Database**
+        Relational Data Storage • ☁️ Supabase`")]
+        DiscordBot["`🤖 **Discord Bot**
+        Python • Real-time Integration • 📄 bot.py`"]
+        BackendTitle ~~~ Django
+        BackendTitle ~~~ DB
+        BackendTitle ~~~ DiscordBot
+    end
+    
+    %% External Services
+    DiscordServer["`💬 **Discord Server**
+    External Communication Platform`"]
+    
+    %% User Connections
+    Users -.->|"`HTTP/JWT
+    Authenticated Requests`"| NextJS
+    Admins -.->|"`HTTP/JWT
+    Admin Interface`"| NextJS
+    Admins -.->|"`Django Admin UI
+    Direct Management`"| Django
+    
+    %% Frontend to Backend
+    NextJS <==>|"`HTTP/JWT
+    RESTful API Communication`"| Django
+    
+    %% Backend to Database
+    Django ==>|"`ORM
+    Object-Relational Mapping`"| DB
+    DiscordBot ==>|"`ORM
+    Data Persistence`"| DB
+    
+    %% Discord Integration
+    DiscordBot <==>|"`Discord API
+    Real-time Events & Commands`"| DiscordServer
+    
+    %% Modern Styling with Premium Colors
+    classDef userStyle fill:#667eea,stroke:#5a67d8,stroke-width:3px,color:#fff
+    classDef frontendStyle fill:#4facfe,stroke:#3182ce,stroke-width:3px,color:#fff
+    classDef backendStyle fill:#43e97b,stroke:#2d7d32,stroke-width:3px,color:#000
+    classDef databaseStyle fill:#fa709a,stroke:#e91e63,stroke-width:3px,color:#000
+    classDef externalStyle fill:#a8edea,stroke:#9c27b0,stroke-width:3px,color:#000
+    classDef containerStyle fill:#2d3748,stroke:#1a202c,stroke-width:4px,color:#fff
+    classDef titleStyle fill:#1a202c,stroke:#4a5568,stroke-width:2px,color:#fff
+    
+    %% Apply styles
+    class Users,Admins userStyle
+    class NextJS frontendStyle
+    class Django,DiscordBot backendStyle
+    class DB databaseStyle
+    class DiscordServer externalStyle
+    class Frontend,Backend containerStyle
+    class FrontendTitle,BackendTitle titleStyle
+```
+
+---
 
 ## 🏗️ Architecture & Technical Stack
 
