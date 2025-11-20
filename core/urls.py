@@ -4,6 +4,10 @@ from .views import (
     DashboardStatsView, PointsTimelineView, LeaderboardView, RewardsAvailableView, RedeemRewardView, RedemptionHistoryView,
     UnifiedActivityFeedView, ClearRewardsCacheView, ClearUserCachesView, health_check, DiscordOAuthRedirectView
 )
+from .views.cache_stats import (
+    CacheStatsView, CacheMemoryView, CacheKeysView, CachePerformanceView,
+    CacheResetView, CacheHistoryView
+)
 from rest_framework.routers import DefaultRouter
 from .views import (
     UserViewSet, TrackViewSet, ActivityViewSet, PointsLogViewSet,
@@ -46,6 +50,14 @@ urlpatterns = [
     path('api/cache/clear_user/', ClearUserCachesView.as_view(), name='clear-user-caches'),
     path('api/redemptions/history/', RedemptionHistoryView.as_view(), name='redemption-history'),
     path('api/activity/feed/', UnifiedActivityFeedView.as_view(), name='unified-activity-feed'),
+    
+    # Cache monitoring endpoints
+    path('api/cache/stats/', CacheStatsView.as_view(), name='cache-stats'),
+    path('api/cache/memory/', CacheMemoryView.as_view(), name='cache-memory'),
+    path('api/cache/keys/', CacheKeysView.as_view(), name='cache-keys'),
+    path('api/cache/performance/', CachePerformanceView.as_view(), name='cache-performance'),
+    path('api/cache/reset/', CacheResetView.as_view(), name='cache-reset'),
+    path('api/cache/history/', CacheHistoryView.as_view(), name='cache-history'),
     
     # Existing endpoints
     path('api/bot/', BotIntegrationView.as_view(), name='bot-integration'),

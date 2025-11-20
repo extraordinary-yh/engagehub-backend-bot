@@ -72,6 +72,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "core.middleware.CacheMonitorMiddleware",
 ]
 
 ROOT_URLCONF = "backend.urls"
@@ -107,27 +108,45 @@ DATABASES['default']['OPTIONS'] = {
 
 # Cache Configuration - CRITICAL for performance
 # Optimized for 1000 users with long TTLs and cache invalidation
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
-        'TIMEOUT': 86400,  # 24 hours default - cache invalidation handles updates
-        'OPTIONS': {
-            'MAX_ENTRIES': 10000,  # Increased for 1000 users with multiple cache keys each
+# Supports both Redis (production) and LocMemCache (development fallback)
+
+USE_REDIS = env.bool("USE_REDIS", default=False)
+CACHE_MONITORING_ENABLED = env.bool("CACHE_MONITORING_ENABLED", default=True)
+
+if USE_REDIS:
+    # Redis configuration for production
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': env('REDIS_URL', default='redis://127.0.0.1:6379/1'),
+            'TIMEOUT': 86400,  # 24 hours default - cache invalidation handles updates
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+                'CONNECTION_POOL_KWARGS': {
+                    'max_connections': 50,
+                    'retry_on_timeout': True,
+                },
+                'SOCKET_CONNECT_TIMEOUT': 5,
+                'SOCKET_TIMEOUT': 5,
+                'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
+                'IGNORE_EXCEPTIONS': True,  # Failover to database if Redis is down
+            },
+            'KEY_PREFIX': 'engagehub',
+            'VERSION': 1,
         }
     }
-}
-
-# For production, consider Redis:
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django_redis.cache.RedisCache',
-#         'LOCATION': env('REDIS_URL', default='redis://127.0.0.1:6379/1'),
-#         'OPTIONS': {
-#             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-#         }
-#     }
-# }
+else:
+    # LocMemCache for development/testing
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'unique-snowflake',
+            'TIMEOUT': 86400,  # 24 hours default - cache invalidation handles updates
+            'OPTIONS': {
+                'MAX_ENTRIES': 10000,  # Increased for 1000 users with multiple cache keys each
+            }
+        }
+    }
 
 
 # Password validation

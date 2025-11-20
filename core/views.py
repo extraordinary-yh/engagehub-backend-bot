@@ -31,14 +31,20 @@ def invalidate_user_caches(user_id):
     Invalidate all cached data for a specific user when their points/activities change.
     This ensures users see updated data immediately after activities are added.
     
+    Enhanced with metrics logging for monitoring cache churn and invalidation patterns.
+    
     Args:
         user_id: The ID of the user whose caches should be invalidated
     """
+    import time
+    start_time = time.time()
+    
     try:
         logger.info(f"🔥 CACHE INVALIDATION START for user {user_id}")
         
-        # Count successful deletions for debugging
+        # Count successful deletions for debugging and metrics
         deleted_count = 0
+        not_found_count = 0
         
         # Activity-related caches - these change most frequently
         keys_to_delete = [
@@ -73,14 +79,51 @@ def invalidate_user_caches(user_id):
         for key in keys_to_delete:
             if cache.delete(key):
                 deleted_count += 1
-                logger.info(f"✅ Deleted cache key: {key}")
+                logger.debug(f"✅ Deleted cache key: {key}")
             else:
-                logger.info(f"⚪ Cache key not found (already expired): {key}")
+                not_found_count += 1
+                logger.debug(f"⚪ Cache key not found (already expired): {key}")
         
-        logger.info(f"🎉 CACHE INVALIDATION COMPLETED for user {user_id} - Deleted {deleted_count}/{len(keys_to_delete)} keys")
+        elapsed_ms = (time.time() - start_time) * 1000
+        
+        # Calculate cache churn rate
+        churn_rate = (deleted_count / len(keys_to_delete)) * 100 if keys_to_delete else 0
+        
+        logger.info(
+            f"🎉 CACHE INVALIDATION COMPLETED for user {user_id} - "
+            f"Deleted: {deleted_count}/{len(keys_to_delete)} keys "
+            f"(Churn Rate: {churn_rate:.1f}%) "
+            f"Time: {elapsed_ms:.2f}ms"
+        )
+        
+        # Log metrics for analysis (can be used by monitoring tools)
+        logger.info(
+            f"CACHE_INVALIDATION_METRICS: "
+            f"user_id={user_id}, "
+            f"deleted={deleted_count}, "
+            f"not_found={not_found_count}, "
+            f"total_keys={len(keys_to_delete)}, "
+            f"churn_rate={churn_rate:.2f}, "
+            f"elapsed_ms={elapsed_ms:.2f}"
+        )
+        
+        # Store invalidation metrics in cache for tracking
+        invalidation_stats_key = f"invalidation_stats_{user_id}"
+        cache.set(invalidation_stats_key, {
+            'timestamp': time.time(),
+            'deleted_count': deleted_count,
+            'not_found_count': not_found_count,
+            'total_keys': len(keys_to_delete),
+            'churn_rate': churn_rate,
+            'elapsed_ms': elapsed_ms,
+        }, 3600)  # Keep for 1 hour
         
     except Exception as e:
-        logger.error(f"❌ CACHE INVALIDATION FAILED for user {user_id}: {str(e)}")
+        elapsed_ms = (time.time() - start_time) * 1000
+        logger.error(
+            f"❌ CACHE INVALIDATION FAILED for user {user_id}: {str(e)} "
+            f"(after {elapsed_ms:.2f}ms)"
+        )
         import traceback
         logger.error(f"Traceback: {traceback.format_exc()}")
         # Don't re-raise the exception to avoid breaking the main flow

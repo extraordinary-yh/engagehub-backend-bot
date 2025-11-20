@@ -8,3 +8,14 @@ services:
       POSTGRES_PASSWORD: backend
     ports:
       - "5432:5432"
+  
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:

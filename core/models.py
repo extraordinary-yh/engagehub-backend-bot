@@ -984,3 +984,59 @@ class RedemptionNotification(models.Model):
     
     def __str__(self):
         return f"Redemption notification for {self.discord_id} - {self.reward_name}"
+
+
+class CacheMetrics(models.Model):
+    """Store cache performance metrics for analysis and monitoring"""
+    
+    # Timestamp for this metrics snapshot
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    
+    # Overall cache statistics
+    total_requests = models.IntegerField(default=0, help_text="Total requests processed")
+    cache_hits = models.IntegerField(default=0, help_text="Number of cache hits")
+    cache_misses = models.IntegerField(default=0, help_text="Number of cache misses")
+    hit_rate = models.FloatField(default=0.0, help_text="Cache hit rate percentage")
+    
+    # Performance metrics
+    avg_response_time_cached = models.FloatField(default=0.0, help_text="Average response time for cached requests (ms)")
+    avg_response_time_uncached = models.FloatField(default=0.0, help_text="Average response time for uncached requests (ms)")
+    time_saved_total = models.FloatField(default=0.0, help_text="Total time saved by caching (ms)")
+    
+    # Memory metrics
+    memory_usage_mb = models.FloatField(default=0.0, help_text="Current memory usage (MB)")
+    cache_size_keys = models.IntegerField(default=0, help_text="Number of keys in cache")
+    
+    # Endpoint-specific data (stored as JSON)
+    endpoint_stats = models.JSONField(default=dict, help_text="Per-endpoint cache statistics")
+    
+    # Cache backend info
+    cache_backend = models.CharField(max_length=100, default='', help_text="Cache backend type (Redis, LocMem, etc.)")
+    
+    # Period this metric represents
+    period_start = models.DateTimeField(null=True, blank=True, help_text="Start of measurement period")
+    period_end = models.DateTimeField(null=True, blank=True, help_text="End of measurement period")
+    
+    class Meta:
+        db_table = 'cache_metrics'
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['-timestamp']),
+            models.Index(fields=['period_start', 'period_end']),
+        ]
+        verbose_name = "Cache Metric"
+        verbose_name_plural = "Cache Metrics"
+    
+    def __str__(self):
+        return f"Cache Metrics @ {self.timestamp} - Hit Rate: {self.hit_rate:.1f}%"
+    
+    @property
+    def efficiency_score(self):
+        """Calculate cache efficiency score (0-100) based on hit rate and time saved"""
+        if self.hit_rate == 0:
+            return 0
+        
+        # Weight hit rate (70%) and time saved (30%)
+        time_saved_score = min(100, (self.time_saved_total / 1000) * 10) if self.time_saved_total > 0 else 0
+        efficiency = (self.hit_rate * 0.7) + (time_saved_score * 0.3)
+        return round(efficiency, 2)
