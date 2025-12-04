@@ -56,6 +56,18 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    # Force API responses (including errors) to render as JSON so the frontend
+    # never receives HTML pages or redirects for API calls.
+    "DEFAULT_RENDERER_CLASSES": [
+        "rest_framework.renderers.JSONRenderer",
+        *(
+            [
+                "rest_framework.renderers.BrowsableAPIRenderer",
+            ]
+            if DEBUG
+            else []
+        ),
+    ],
 }
 
 SPECTACULAR_SETTINGS = {

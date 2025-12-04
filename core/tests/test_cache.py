@@ -126,6 +126,28 @@ class CacheInvalidationTestCase(TestCase):
         self.assertIsNone(cache.get(cache_key))
 
 
+class CacheAuthenticationResponseTestCase(APITestCase):
+    """Ensure cache endpoints return JSON when unauthenticated"""
+    
+    def setUp(self):
+        cache.clear()
+        CacheMonitorMiddleware.reset_metrics()
+    
+    def test_cache_endpoints_return_json_when_unauthorized(self):
+        endpoints = [
+            reverse('cache-stats'),
+            reverse('cache-memory'),
+            reverse('cache-performance'),
+            f"{reverse('cache-history')}?days=7",
+        ]
+        
+        for url in endpoints:
+            response = self.client.get(url)
+            self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+            self.assertTrue(response.get('Content-Type', '').startswith('application/json'))
+            self.assertIn('detail', response.data)
+
+
 class CachePerformanceTestCase(APITestCase):
     """Test cache performance improvements"""
     
